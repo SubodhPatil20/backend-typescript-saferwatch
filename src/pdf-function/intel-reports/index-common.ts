@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { Request, Response, NextFunction } from 'express';
-import intelReport from './methods';
+import {intelSummaryReport} from './methods';
 
 interface QueryParams {
   intel_id?: string;
@@ -11,6 +11,8 @@ interface QueryParams {
 
 interface SessionData {
   vrToken: string;
+  locationDropdown?:string;
+  
 }
 
 interface RequestWithSession extends Request {
@@ -25,14 +27,14 @@ export default function (
   // get query string
   const queryString = req.query as {
   intel_id?: string;
-  include_media?: string | number;
+  include_media?: number;
   include_casenotes?: string | number;
   report_id?: string;
 };
 
   // get params from query
   const intelId = queryString.intel_id;
-  const includeMedia = queryString.include_media;
+  const includeMedia = queryString.include_media || 0;
 
   let includeCaseNotes = 0;
   if (
@@ -73,12 +75,11 @@ export default function (
         });
       } else {
         // else call pdf function
-        intelReport
-          .intelSummaryReport(
+        intelSummaryReport(
             req.session.vrToken,
             intelId,
             includeMedia,
-            '',
+          false,
             includeCaseNotes,
             req,
             res
